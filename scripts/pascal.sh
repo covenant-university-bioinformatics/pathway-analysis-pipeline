@@ -29,10 +29,7 @@
 
 set -x	## To debug
 
-
-input_dir=".";
-output_dir="./Testing/";
-bin_dir="/local/datasets";
+bin_dir="/media/yagoubali/bioinfo/web-applictaion/PASCAL-pipeline/PASCAL";
 
 gwas_summary=$1;
 outdir=$2;
@@ -50,48 +47,49 @@ runpathway=$4 #{on, off}
 ##### Parameters
 ##1.  Defualt maximum number of SNPs per gene is 3000,  --maxsnp=3000
 maxsnp=$5
-if [[ "$maxsnp" -eq " " ]]; then
+if [[ "$maxsnp" -eq '' ]]; then
   maxsnp=3000;
 fi
 
 ##2.  Default genescoring method is sum,  --genescoring=sum
 ## two options {max, sum}
 genescoring=$6
-if [[ "$genescoring" -eq " " ]]; then
+if [[ "$genescoring" -eq '' ]]; then
   genescoring=sum;
 fi
 
 ##3. Default genomic distance in mega-bases that the program uses to fuse nearby genes during the pathway analysis is 1
 mergedistance=$7
-if [[ "$mergedistance" -eq " " ]]; then
-  mergedistanceg=1;
+if [[ "$mergedistance" -eq '' ]]; then
+  mergedistance=1;
 fi
 
 ##4. SNPs with maf below that value in the european samle of 1KG will be ignored.
 ## The default is 0.05. This option should be supplied with a number between 0 and 1
 mafcutoff=$8
-if [[ "$mafcutoff" -eq " " ]]; then
+if [[ "$mafcutoff" -eq '' ]]; then
   mafcutoff=0.05;
 fi
 
 ##5.
+cd ${bin_dir}
 if [[ "$runpathway" -eq "on" ]]; then
-./Pascal --pval=$gwas_summary \
-        --customdir=${binary_dir}/custom-1000genomes  --custom=$population \
+bash Pascal --pval=$gwas_summary \
+        --customdir=${bin_dir}/custom-1000genomes  --custom=$population \
         --runpathway=on  \
         --maxsnp=$maxsnp \
         --genescoring=$genescoring \
         --mergedistance=$mergedistance \
         --mafcutoff=$mafcutoff \
-        --outdir=$output_dir #\
+        --outdir=${outdir} #\
       else
-    ./Pascal    -pval=$gwas_summary \
-                --customdir=${binary_dir}/custom-1000genomes  --custom=$population \
+    bash Pascal    -pval=$gwas_summary \
+                --customdir=${bin_dir}/custom-1000genomes  --custom=$population \
                 --maxsnp=$maxsnp \
                 --genescoring=$genescoring \
                 --mergedistance=$mergedistance \
                 --mafcutoff=$mafcutoff \
-                --outdir=$output_dir #\
+                --outdir=${outdir} #\
 fi
 
 
