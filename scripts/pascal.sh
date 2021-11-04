@@ -2,7 +2,14 @@
 
 ##### pascal
 ## To Run
-# Pascal --pval=GWAS_summary  outdir {afr,eur,amr,sas,eas} {on,off}
+# ./pascal.sh GWAS_summary  outdir {afr,eur,amr,sas,eas} {on,off} {1-22, all} {msigdb_entrez, msigBIOCARTA_KEGG_REACTOME}
+# Test
+# ./pascal.sh UK_pval_0.05.pascal outdir afr off all msigdb_entrez
+# ./pascal.sh UK_pval_0.05.pascal outdir afr off all msigBIOCARTA_KEGG_REACTOME
+#./pascal.sh UK_pval_0.05.pascal  outdir afr on all on msigdb_entrez
+#./pascal.sh UK_pval_0.05.pascal  outdir afr on all msigBIOCARTA_KEGG_REACTOME
+#./pascal.sh UK_pval_0.05.pascal  outdir afr on 1 on msigdb_entrez
+#./pascal.sh UK_pval_0.05.pascal  outdir afr on 1 msigBIOCARTA_KEGG_REACTOME
 
 ####### Downloading files
 ### wget http://www2.unil.ch/cbg/images/3/3d/PASCAL.zip
@@ -17,87 +24,107 @@
 ## 1- SNP-ID without header
 ## 2- P-value  without header
 
-
-
-## Default --mafcutoff is 0.5, --mafcutoff=0.5
-## The default  upstream window is 50000, --up=50000
-## The default  downstream window is 50000, --down=50000
-## --genesetfile for gene set file; The default is resources/genesets/msigdb/msigBIOCARTA_KEGG_REACTOME.gmt
-
 ## To download to custom 1000 genomes ---> https://drive.google.com/drive/folders/1lrMNjDaxmRir7BvA9J7mSURTXUO5Uz5X?usp=sharing
 
 
 set -x	## To debug
 
-bin_dir="/media/yagoubali/bioinfo/web-applictaion/PASCAL-pipeline/PASCAL";
+bin_dir=/media/yagoubali/bioinfo/web-applictaion/PASCAL-pipeline/PASCAL;
 
 gwas_summary=$1;
 outdir=$2;
 population=$3; #  {afr, amr, eur, eas, sas}
-
 runpathway=$4 #{on, off}
-#### add more  variables to set the default values
+chr=$5; #{1-22, all}
+genesetfile=$6; # {msigdb_entrez, msigBIOCARTA_KEGG_REACTOME}
+# resources/genesets/msigdb/msigdb.v4.0.entrez.gmt
+# resources/genesets/msigdb/msigBIOCARTA_KEGG_REACTOME.gmt
+if [[ "$genesetfile" -eq "msigdb_entrez" ]]; then
+  genesetfile=${bin_dir}'/resources/genesets/msigdb/msigdb.v4.0.entrez.gmt';
+elif [[ "$genesetfile" -eq "msigBIOCARTA_KEGG_REACTOME" ]]; then
+  genesetfile=${bin_dir}'/resources/genesets/msigdb/msigBIOCARTA_KEGG_REACTOME.gmt';
+fi
 
-
-####### Run Pascal
-## Output files are produced in {PascalPackage}/output/
-### Output file name EUR.CARDIoGRAM_2010_lipids.HDL_ONE.MYNAME.genescores.chr22.txt
-
-
+for i in $*; do
+   echo $i
+ done
 ##### Parameters
-##1.  Defualt maximum number of SNPs per gene is 3000,  --maxsnp=3000
-maxsnp=$5
-if [[ "$maxsnp" -eq '' ]]; then
+#### adding more  variables
+up=$7 #number of base-pairs upstream of the transcription start site
+if [[ -z "$up" ]]; then
+  up=50000;
+fi
+
+down=$8 #number of base-pairs downstream of the transcription start site
+if [[ -z "$down" ]]; then
+  down=50000;
+fi
+
+maxsnp=$9 #maximum number of SNPs per gene
+if [[ -z "$maxsnp" ]]; then
   maxsnp=3000;
 fi
 
-##2.  Default genescoring method is sum,  --genescoring=sum
-## two options {max, sum}
-genescoring=$6
-if [[ "$genescoring" -eq '' ]]; then
+genescoring=${10}; # genescoring method  {max, sum}
+if [[ -z "$genescoring"  ]]; then
   genescoring=sum;
 fi
 
-##3. Default genomic distance in mega-bases that the program uses to fuse nearby genes during the pathway analysis is 1
-mergedistance=$7
-if [[ "$mergedistance" -eq '' ]]; then
+echo $genescoring
+mergedistance=${11} #genomic distance in mega-bases
+if [[ -z "$mergedistance" ]]; then
   mergedistance=1;
 fi
 
-##4. SNPs with maf below that value in the european samle of 1KG will be ignored.
-## The default is 0.05. This option should be supplied with a number between 0 and 1
-mafcutoff=$8
-if [[ "$mafcutoff" -eq '' ]]; then
+
+mafcutoff=${12} #This option should be supplied with a number between 0 and 1
+if [[  -z "$mafcutoff" ]]; then
   mafcutoff=0.05;
 fi
 
-##5.
+
 cd ${bin_dir}
-if [[ "$runpathway" -eq "on" ]]; then
-bash Pascal --pval=$gwas_summary \
-        --customdir=${bin_dir}/custom-1000genomes  --custom=$population \
-        --runpathway=on  \
+
+##1. Run analysis for all chromosomes
+if [[ "$chr" -eq "all" ]]; then
+bash Pascal --pval=${gwas_summary} \
+        --customdir=${bin_dir}/custom-1000genomes  \
+        --custom=$population \
+        --runpathway=${runpathway}  \
+        --up=$up \
+        --down=$down \
         --maxsnp=$maxsnp \
         --genescoring=$genescoring \
         --mergedistance=$mergedistance \
         --mafcutoff=$mafcutoff \
-        --outdir=${outdir} #\
-      else
-    bash Pascal    -pval=$gwas_summary \
-                --customdir=${bin_dir}/custom-1000genomes  --custom=$population \
+        --genesetfile=$genesetfile \
+        --outdir=${outdir}
+else
+    bash Pascal -pval=$gwas_summary \
+                --customdir=${bin_dir}/custom-1000genomes  \
+                --custom=$population \
+                --runpathway=${runpathway}  \
+                --up=$up \
+                --down=$down \
                 --maxsnp=$maxsnp \
                 --genescoring=$genescoring \
                 --mergedistance=$mergedistance \
                 --mafcutoff=$mafcutoff \
-                --outdir=${outdir} #\
+                --genesetfile=$genesetfile \
+                --chr=$chr \
+                --outdir=${outdir}
 fi
-
-
-## --outsuffix=${outsuffix}
-##### Output files:
-## 1- ${gwas_summary}.sum.genescores.txt  ----> The gene score results.
-## 2- ${gwas_summary}.PathwaySet--msigBIOCARTA_KEGG_REACTOME--sum.txt ----> The pathway score results.
-## 3- ${gwas_summary}.sum.fusion.genescores.txt  ----> The fusion gene score results.
-## 4- ${gwas_summary}.sum.numSnpError.txt ----> A file containing all genes that contain no SNPs or contain more SNPs than given by the --maxsnp option
-## 5- ${gwas_summary}.sum.fusion.numSnpError.txt  ---> A file containing all genes that contain no SNPs or contain more SNPs than given by the --maxsnp option
-### ## 5- ${gwas_summary}.*.ComputeError.txt  --->  Failed to compute
+#
+#
+# #
+#
+# ## --outsuffix=${outsuffix}
+# ##### Output files:
+# ## 1- ${gwas_summary}.sum.genescores.txt  ----> The gene score results.
+# ## 2- ${gwas_summary}.PathwaySet--msigBIOCARTA_KEGG_REACTOME--sum.txt ----> The pathway score results.
+# ## 3- ${gwas_summary}.sum.fusion.genescores.txt  ----> The fusion gene score results.
+# ## 4- ${gwas_summary}.sum.numSnpError.txt ----> A file containing all genes that contain no SNPs or contain more SNPs than given by the --maxsnp option
+# ## 5- ${gwas_summary}.sum.fusion.numSnpError.txt  ---> A file containing all genes that contain no SNPs or contain more SNPs than given by the --maxsnp option
+# ### ## 5- ${gwas_summary}.*.ComputeError.txt  --->  Failed to compute
+# #fusion.genescores --> Pascal does this by generating ‘fusion’ gene scores for genes that are in linkage with each other
+# #https://www.biorxiv.org/content/10.1101/235408v1.full.pdf
