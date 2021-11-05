@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+#run for amr and eur
 ##### pascal
 ## To Run
 # ./pascal.sh GWAS_summary  outdir {afr,eur,amr,sas,eas} {on,off} {1-22, all} {msigdb_entrez, msigBIOCARTA_KEGG_REACTOME}
@@ -8,7 +8,7 @@
 # ./pascal.sh UK_pval_0.05.pascal outdir afr off all msigBIOCARTA_KEGG_REACTOME
 #./pascal.sh UK_pval_0.05.pascal  outdir afr on all on msigdb_entrez
 #./pascal.sh UK_pval_0.05.pascal  outdir afr on all msigBIOCARTA_KEGG_REACTOME
-#./pascal.sh UK_pval_0.05.pascal  outdir afr on 1 on msigdb_entrez
+#./pascal.sh UK_pval_0.05.pascal  outdir afr on 1 msigdb_entrez
 #./pascal.sh UK_pval_0.05.pascal  outdir afr on 1 msigBIOCARTA_KEGG_REACTOME
 
 ####### Downloading files
@@ -29,7 +29,7 @@
 
 set -x	## To debug
 
-bin_dir=/media/yagoubali/bioinfo/web-applictaion/PASCAL-pipeline/PASCAL;
+bin_dir=/mnt/d/PASCAL;
 
 gwas_summary=$1;
 outdir=$2;
@@ -45,9 +45,8 @@ elif [[ "$genesetfile" -eq "msigBIOCARTA_KEGG_REACTOME" ]]; then
   genesetfile=${bin_dir}'/resources/genesets/msigdb/msigBIOCARTA_KEGG_REACTOME.gmt';
 fi
 
-for i in $*; do
-   echo $i
- done
+# add cutoff for pathways file as parameter 7
+
 ##### Parameters
 #### adding more  variables
 up=$7 #number of base-pairs upstream of the transcription start site
@@ -70,7 +69,7 @@ if [[ -z "$genescoring"  ]]; then
   genescoring=sum;
 fi
 
-echo $genescoring
+
 mergedistance=${11} #genomic distance in mega-bases
 if [[ -z "$mergedistance" ]]; then
   mergedistance=1;
@@ -100,7 +99,7 @@ bash Pascal --pval=${gwas_summary} \
         --genesetfile=$genesetfile \
         --outdir=${outdir}
 else
-    bash Pascal -pval=$gwas_summary \
+    bash Pascal --pval=$gwas_summary \
                 --customdir=${bin_dir}/custom-1000genomes  \
                 --custom=$population \
                 --runpathway=${runpathway}  \
