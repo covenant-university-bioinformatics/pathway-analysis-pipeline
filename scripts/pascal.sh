@@ -39,44 +39,50 @@ chr=$5; #{1-22, all}
 genesetfile=$6; # {msigdb_entrez, msigBIOCARTA_KEGG_REACTOME}
 # resources/genesets/msigdb/msigdb.v4.0.entrez.gmt
 # resources/genesets/msigdb/msigBIOCARTA_KEGG_REACTOME.gmt
-if [[ "$genesetfile" -eq "msigdb_entrez" ]]; then
+pathway_output_suffix=${genesetfile};
+if [[ "$genesetfile" == "msigdb_entrez" ]]; then
   genesetfile=${bin_dir}'/resources/genesets/msigdb/msigdb.v4.0.entrez.gmt';
-elif [[ "$genesetfile" -eq "msigBIOCARTA_KEGG_REACTOME" ]]; then
+  pathway_output_suffix='msigdb.v4.0.entrez';
+else # [[ "$genesetfile" -eq "msigBIOCARTA_KEGG_REACTOME" ]]; then
   genesetfile=${bin_dir}'/resources/genesets/msigdb/msigBIOCARTA_KEGG_REACTOME.gmt';
+  pathway_output_suffix='msigBIOCARTA_KEGG_REACTOME';
 fi
 
 # add cutoff for pathways file as parameter 7
-
+cutoff_pathways=$7
+if [[ -z "$cutoff_pathways" ]]; then
+  cutoff_pathways=0.05;
+fi
 ##### Parameters
 #### adding more  variables
-up=$7 #number of base-pairs upstream of the transcription start site
+up=$8 #number of base-pairs upstream of the transcription start site
 if [[ -z "$up" ]]; then
   up=50000;
 fi
 
-down=$8 #number of base-pairs downstream of the transcription start site
+down=$9 #number of base-pairs downstream of the transcription start site
 if [[ -z "$down" ]]; then
   down=50000;
 fi
 
-maxsnp=$9 #maximum number of SNPs per gene
+maxsnp=${10} #maximum number of SNPs per gene
 if [[ -z "$maxsnp" ]]; then
   maxsnp=3000;
 fi
 
-genescoring=${10}; # genescoring method  {max, sum}
+genescoring=${11}; # genescoring method  {max, sum}
 if [[ -z "$genescoring"  ]]; then
   genescoring=sum;
 fi
 
 
-mergedistance=${11} #genomic distance in mega-bases
+mergedistance=${12} #genomic distance in mega-bases
 if [[ -z "$mergedistance" ]]; then
   mergedistance=1;
 fi
 
 
-mafcutoff=${12} #This option should be supplied with a number between 0 and 1
+mafcutoff=${13} #This option should be supplied with a number between 0 and 1
 if [[  -z "$mafcutoff" ]]; then
   mafcutoff=0.05;
 fi
@@ -85,7 +91,7 @@ fi
 cd ${bin_dir}
 
 ##1. Run analysis for all chromosomes
-if [[ "$chr" -eq "all" ]]; then
+if [[ "$chr" == "all" ]]; then
 bash Pascal --pval=${gwas_summary} \
         --customdir=${bin_dir}/custom-1000genomes  \
         --custom=$population \
@@ -113,6 +119,14 @@ else
                 --chr=$chr \
                 --outdir=${outdir}
 fi
+
+### Filter out pathways results based on pvalue cutoff
+if [[ "$runpathway" == "on" ]]; then
+  ## replace comma with period for math comparrion
+  sed -i 's/,/./g' ${outdir}/*${pathway_output_suffix}*.txt
+  awk -v pvalue=$cutoff_pathways '{if(NR==1) print $0; if (($2)<=pvalue) print $0}' ${outdir}/*${pathway_output_suffix}*.txt > ${outdir}/${pathway_output_suffix}.txt
+fi
+
 #
 #
 # #
