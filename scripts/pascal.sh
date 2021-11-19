@@ -39,19 +39,19 @@ chr=$5; #{1-22, all}
 genesetfile=$6; # {msigdb_entrez, msigBIOCARTA_KEGG_REACTOME}
 # resources/genesets/msigdb/msigdb.v4.0.entrez.gmt
 # resources/genesets/msigdb/msigBIOCARTA_KEGG_REACTOME.gmt
-pathway_output_suffix=${genesetfile};
+#pathway_output_suffix=${genesetfile};
 if [[ "$genesetfile" == "msigdb_entrez" ]]; then
   genesetfile=${bin_dir}'/resources/genesets/msigdb/msigdb.v4.0.entrez.gmt';
-  pathway_output_suffix='msigdb.v4.0.entrez';
+  #pathway_output_suffix='msigdb.v4.0.entrez';
 else # [[ "$genesetfile" -eq "msigBIOCARTA_KEGG_REACTOME" ]]; then
   genesetfile=${bin_dir}'/resources/genesets/msigdb/msigBIOCARTA_KEGG_REACTOME.gmt';
-  pathway_output_suffix='msigBIOCARTA_KEGG_REACTOME';
+  #pathway_output_suffix='msigBIOCARTA_KEGG_REACTOME';
 fi
 
 # add cutoff for pathways file as parameter 7
-cutoff_pathways=$7
+pvalue_cutoff=$7
 if [[ -z "$cutoff_pathways" ]]; then
-  cutoff_pathways=0.05;
+  pvalue_cutoff=0.05;
 fi
 ##### Parameters
 #### adding more  variables
@@ -119,12 +119,28 @@ else
                 --chr=$chr \
                 --outdir=${outdir}
 fi
-
+### Filter genescores results
+genescores_file=$(ls ${outdir}| grep ${genescoring}.genescores*);
+genescores_output=$(echo ${genescores_file}| sed -e 's/.txt/_filtered.txt/');
+sed -i 's/,/./g' ${outdir}/${genescores_file};
+#awk -v pvalue=$pvalue_cutoff '{if(NR==1) print $0; if (($8)<=pvalue) print $0}' ${outdir}/*${genescores_file} > ${outdir}/${genescores_output}
+Rscript --vanilla ${bin_dir}/filterGeneScoresFiles.R ${outdir}/${genescores_file} ${outdir}/${genescores_output} ${pvalue_cutoff}
 ### Filter out pathways results based on pvalue cutoff
 if [[ "$runpathway" == "on" ]]; then
-  ## replace comma with period for math comparrion
-  sed -i 's/,/./g' ${outdir}/*${pathway_output_suffix}*.txt
-  awk -v pvalue=$cutoff_pathways '{if(NR==1) print $0; if (($2)<=pvalue) print $0}' ${outdir}/*${pathway_output_suffix}*.txt > ${outdir}/${pathway_output_suffix}.txt
+  ## prepare Output files name.
+  fusion_file=$(ls ${outdir}| grep ${genescoring}.fusion.genescores*);
+  fusion_output=$(echo ${fusion_file}| sed -e 's/.txt/_filtered.txt/');
+  pathway_file=$(ls ${outdir}| grep PathwaySet)
+  pathway_output=$(echo ${pathway_file}| sed -e 's/.txt/_filtered.txt/')
+  #awk -v pvalue=$pvalue_cutoff '{if(NR==1) print $0; if (($8)<=pvalue) print $0}' ${outdir}/*${fusion_file} > ${outdir}/${fusion_output}
+  sed -i 's/,/./g' ${outdir}/${fusion_file};
+  Rscript --vanilla ${bin_dir}/filterGeneScoresFiles.R ${outdir}/${fusion_file} ${outdir}/${fusion_output} ${pvalue_cutoff}
+
+  ## replace comma with period for math comparison
+  sed -i 's/,/./g' ${outdir}/${pathway_file}
+  #awk -v pvalue=$pvalue_cutoff '{if(NR==1) print $0; if (($2)<=pvalue) print $0}' ${outdir}/*${pathway_file} > ${outdir}/${pathway_output}
+  Rscript --vanilla ${bin_dir}/filterPathwayFile.R ${outdir}/${pathway_file} ${outdir}/${pathway_output} ${pvalue_cutoff}
+
 fi
 
 #
