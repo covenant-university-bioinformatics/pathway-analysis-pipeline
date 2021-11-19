@@ -123,8 +123,8 @@ fi
 genescores_file=$(ls ${outdir}| grep ${genescoring}.genescores*);
 genescores_output=$(echo ${genescores_file}| sed -e 's/.txt/_filtered.txt/');
 sed -i 's/,/./g' ${outdir}/${genescores_file};
-#awk -v pvalue=$pvalue_cutoff '{if(NR==1) print $0; if (($8)<=pvalue) print $0}' ${outdir}/*${genescores_file} > ${outdir}/${genescores_output}
-Rscript --vanilla ${bin_dir}/filterGeneScoresFiles.R ${outdir}/${genescores_file} ${outdir}/${genescores_output} ${pvalue_cutoff}
+awk -v pvalue=$pvalue_cutoff '{if(NR==1) print $0; if (($8)<=pvalue) print $0}' ${outdir}/${genescores_file} > ${outdir}/${genescores_output}
+#Rscript --vanilla ${bin_dir}/filterGeneScoresFiles.R ${outdir}/${genescores_file} ${outdir}/${genescores_output} ${pvalue_cutoff}
 ### Filter out pathways results based on pvalue cutoff
 if [[ "$runpathway" == "on" ]]; then
   ## prepare Output files name.
@@ -132,14 +132,14 @@ if [[ "$runpathway" == "on" ]]; then
   fusion_output=$(echo ${fusion_file}| sed -e 's/.txt/_filtered.txt/');
   pathway_file=$(ls ${outdir}| grep PathwaySet)
   pathway_output=$(echo ${pathway_file}| sed -e 's/.txt/_filtered.txt/')
-  #awk -v pvalue=$pvalue_cutoff '{if(NR==1) print $0; if (($8)<=pvalue) print $0}' ${outdir}/*${fusion_file} > ${outdir}/${fusion_output}
   sed -i 's/,/./g' ${outdir}/${fusion_file};
-  Rscript --vanilla ${bin_dir}/filterGeneScoresFiles.R ${outdir}/${fusion_file} ${outdir}/${fusion_output} ${pvalue_cutoff}
+  awk -v pvalue=$pvalue_cutoff '{if(NR==1) print $0; if (($8)<=pvalue) print $0}' ${outdir}/${fusion_file} > ${outdir}/${fusion_output}
+  #Rscript --vanilla ${bin_dir}/filterGeneScoresFiles.R ${outdir}/${fusion_file} ${outdir}/${fusion_output} ${pvalue_cutoff}
 
   ## replace comma with period for math comparison
   sed -i 's/,/./g' ${outdir}/${pathway_file}
-  #awk -v pvalue=$pvalue_cutoff '{if(NR==1) print $0; if (($2)<=pvalue) print $0}' ${outdir}/*${pathway_file} > ${outdir}/${pathway_output}
-  Rscript --vanilla ${bin_dir}/filterPathwayFile.R ${outdir}/${pathway_file} ${outdir}/${pathway_output} ${pvalue_cutoff}
+  awk -v pvalue=$pvalue_cutoff '{if(NR==1) print $0; if (($2)<=pvalue) print $0}' ${outdir}/${pathway_file} > ${outdir}/${pathway_output}
+  #Rscript --vanilla ${bin_dir}/filterPathwayFile.R ${outdir}/${pathway_file} ${outdir}/${pathway_output} ${pvalue_cutoff}
 
 fi
 
