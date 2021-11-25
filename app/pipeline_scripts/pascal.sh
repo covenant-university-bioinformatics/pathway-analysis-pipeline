@@ -144,7 +144,7 @@ if [[ "$runpathway" == "on" ]]; then
   sed -i 's/,/./g' ${outdir}/${fusion_file};
   awk -v pvalue=$pvalue_cutoff '{if(NR==1) print $0; if (($8)<=pvalue) print $0}' ${outdir}/${fusion_file} > ${outdir}/${fusion_output}
   else 
-  touch ${outdir}/no_fusion_output_filtered.txt};
+  touch ${outdir}/no_fusion_output_filtered.txt;
   fi
   pathway_file=$(ls ${outdir}| grep PathwaySet)
   pathway_output=$(echo ${pathway_file}| sed -e 's/.txt/_filtered.txt/')
