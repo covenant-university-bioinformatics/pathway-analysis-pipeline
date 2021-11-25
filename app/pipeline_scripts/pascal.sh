@@ -40,6 +40,7 @@
 #for development
 bin_dir=/local/datasets/pathwaybased;
 
+
 gwas_summary=$1;
 outdir=$2;
 population=$3; #  {afr, amr, eur, eas, sas}
@@ -112,7 +113,7 @@ bash Pascal --pval=${gwas_summary} \
         --mergedistance=$mergedistance \
         --mafcutoff=$mafcutoff \
         --genesetfile=$genesetfile \
-        --outdir=${outdir}
+        --outdir=${outdir} &> ${outdir}/results.log
 else
     bash Pascal --pval=$gwas_summary \
                 --customdir=${bin_dir}/custom-1000genomes  \
@@ -126,7 +127,7 @@ else
                 --mafcutoff=$mafcutoff \
                 --genesetfile=$genesetfile \
                 --chr=$chr \
-                --outdir=${outdir}
+                --outdir=${outdir} &> ${outdir}/error.log
 fi
 ### Filter genescores results
 genescores_file=$(ls ${outdir}| grep ${genescoring}.genescores*);

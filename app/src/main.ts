@@ -14,6 +14,7 @@ async function bootstrap() {
   // await connectDB();
   const app = await NestFactory.create(AppModule);
   app.enableCors();
+  // app.use(express.limit('4M'));
   // app.use(express.limit('300M'));
   app.use(cookieParser());
   app.use(mongoSanitize());
