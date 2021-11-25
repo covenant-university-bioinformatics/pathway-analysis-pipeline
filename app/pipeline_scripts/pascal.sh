@@ -139,15 +139,16 @@ awk -v pvalue=$pvalue_cutoff '{if(NR==1) print $0; if (($8)<=pvalue) print $0}' 
 if [[ "$runpathway" == "on" ]]; then
   ## prepare Output files name.
   fusion_file=$(ls ${outdir}| grep ${genescoring}.fusion.genescores*);
-  fusion_output=$(echo ${fusion_file}| sed -e 's/.txt/_filtered.txt/');
-  pathway_file=$(ls ${outdir}| grep PathwaySet)
-  pathway_output=$(echo ${pathway_file}| sed -e 's/.txt/_filtered.txt/')
-  sed -i 's/,/./g' ${outdir}/${fusion_file};
   if [[ -f "${outdir}/${fusion_file}" ]]; then
+  fusion_output=$(echo ${fusion_file}| sed -e 's/.txt/_filtered.txt/');
+  sed -i 's/,/./g' ${outdir}/${fusion_file};
   awk -v pvalue=$pvalue_cutoff '{if(NR==1) print $0; if (($8)<=pvalue) print $0}' ${outdir}/${fusion_file} > ${outdir}/${fusion_output}
   else 
-  touch ${outdir}/${fusion_output};
+  touch ${outdir}/no_fusion_output_filtered.txt};
   fi
+  pathway_file=$(ls ${outdir}| grep PathwaySet)
+  pathway_output=$(echo ${pathway_file}| sed -e 's/.txt/_filtered.txt/')
+  
   #Rscript --vanilla ${bin_dir}/filterGeneScoresFiles.R ${outdir}/${fusion_file} ${outdir}/${fusion_output} ${pvalue_cutoff}
 
   ## replace comma with period for math comparison
