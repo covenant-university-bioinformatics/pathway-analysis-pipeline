@@ -47,9 +47,8 @@ const storageOpts = multer.diskStorage({
   },
 });
 
-@UseGuards(AuthGuard())
-@Controller('api/pathwaybased/jobs')
-export class JobsPathwaybasedController {
+@Controller('api/pathwaybased/noauth/jobs')
+export class JobsPathwaybasedControllerNoAuth {
   constructor(private readonly jobsService: JobsPathwaybasedService) {}
 
   @Post()
@@ -57,29 +56,14 @@ export class JobsPathwaybasedController {
   async create(
     @Body(ValidationPipe) createJobDto: CreateJobDto,
     @UploadedFile() file: Express.Multer.File,
-    @GetUser() user,
   ) {
     //call service
-    return await this.jobsService.create(createJobDto, file, user);
-  }
-
-  @Get()
-  findAll(@Query(ValidationPipe) jobsDto: GetJobsDto, @GetUser() user) {
-    return this.jobsService.findAll(jobsDto, user);
-  }
-
-  @Get('/test')
-  test(@Param('id') id: string) {
-    return {
-      success: true,
-    };
+    return await this.jobsService.create(createJobDto, file);
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string, @GetUser() user) {
-    const job = await this.jobsService.getJobByID(id, user);
-    // console.log('Throwing error');
-    // throw Error('Testing');
+    const job = await this.jobsService.getJobByIDNoAuth(id);
 
     job.user = null;
     return job;
@@ -91,39 +75,12 @@ export class JobsPathwaybasedController {
     @Param('file') file_key: string,
     @GetUser() user,
   ) {
-    const job = await this.jobsService.getJobByID(id, user);
+    const job = await this.jobsService.getJobByIDNoAuth(id);
     return getFileOutput(id, file_key, job);
-    // const fileExists = await fileOrPathExists(job[file_key]);
-    // if (fileExists) {
-    //   try {
-    //     const stat = await fileSizeMb(job[file_key]);
-    //     if (stat && stat > 2) {
-    //       //  get first 1000 lines
-    //       const lines = fetchLines(job[file_key]);
-    //       return lines;
-    //     } else {
-    //       const file = fs.createReadStream(job[file_key]);
-    //
-    //       return new StreamableFile(file);
-    //     }
-    //   } catch (e) {
-    //     console.log(e);
-    //     throw new BadRequestException(e.message);
-    //   }
-    // } else {
-    //   throw new BadRequestException(
-    //     'File not available! Job probably still running or parameter not selected',
-    //   );
-    // }
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string, @GetUser() user) {
-    return this.jobsService.removeJob(id, user);
-  }
-
-  @Delete()
-  async deleteMany(@Param('id') id: string, @GetUser() user) {
-    return await this.jobsService.deleteManyJobs(user);
+    return this.jobsService.removeJobNoAuth(id);
   }
 }

@@ -47,14 +47,24 @@ export const createWorkers = async (
         job: job.data.jobId,
       }).exec();
 
-      const scores_filename = `${parameters.filename_prefix}.${parameters.gene_scoring}.genescores.chr${parameters.chr}_filtered.txt`;
+      const scores_filename =
+        parameters.chr === 'all'
+          ? `${parameters.filename_prefix}.${parameters.gene_scoring}.genescores_filtered.txt`
+          : `${parameters.filename_prefix}.${parameters.gene_scoring}.genescores.chr${parameters.chr}_filtered.txt`;
+
       const pathway_filename =
         parameters.run_pathway === RunPathwayOptions.ON
-          ? `${parameters.filename_prefix}.PathwaySet--${parameters.gene_set_file}--${parameters.gene_scoring}.chr${parameters.chr}_filtered.txt`
+          ? parameters.chr === 'all'
+            ? `${parameters.filename_prefix}.PathwaySet--${parameters.gene_set_file}--${parameters.gene_scoring}_filtered.txt`
+            : `${parameters.filename_prefix}.PathwaySet--${parameters.gene_set_file}--${parameters.gene_scoring}.chr${parameters.chr}_filtered.txt`
           : '';
-      const fusion_filename = `${parameters.filename_prefix}.${parameters.gene_scoring}.fusion.genescores.chr${parameters.chr}_filtered.txt`;
+      const fusion_filename =
+        parameters.run_pathway === RunPathwayOptions.ON
+          ? parameters.chr === 'all'
+            ? `${parameters.filename_prefix}.${parameters.gene_scoring}.fusion.genescores_filtered.txt`
+            : `${parameters.filename_prefix}.${parameters.gene_scoring}.fusion.genescores.chr${parameters.chr}_filtered.txt`
+          : '';
 
-      // const jobParams = await GeneBasedModel.findById(job.data.jobId).exec();
       const pathToOutputDir = `/pv/analysis/${job.data.jobUID}/pathwaybased/output`;
 
       //update db with result files

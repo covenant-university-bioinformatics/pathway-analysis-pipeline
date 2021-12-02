@@ -16,7 +16,8 @@ interface JobsAttrs {
   jobUID: string;
   job_name: string;
   status: JobStatus;
-  user: string;
+  user?: string;
+  email?: string;
   inputFile: string;
   longJob: boolean;
 }
@@ -34,7 +35,8 @@ export interface PathwayBasedJobsDoc extends mongoose.Document {
   job_name: string;
   inputFile: string;
   status: JobStatus;
-  user: UserDoc;
+  user?: UserDoc;
+  email?: string;
   geneScoresFile: string;
   pathwaySetFile: string;
   fusionGenesFile: string;
@@ -111,7 +113,11 @@ const PathwayBasedJobSchema = new mongoose.Schema<
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      // required: true,
+    },
+    email: {
+      type: String,
+      trim: true,
     },
     version: {
       type: Number,

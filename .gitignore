@@ -7,6 +7,7 @@ dev_depl/helm/ingress-values.yaml
 dev_depl/helm/redis-values.yaml
 
 # User-specific stuff:
+.idea
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/dictionaries

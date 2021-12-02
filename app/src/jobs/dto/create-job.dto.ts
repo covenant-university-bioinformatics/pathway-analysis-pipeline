@@ -5,6 +5,8 @@ import {
   MinLength,
   IsEnum,
   IsNotEmpty,
+  IsEmail,
+  IsOptional,
 } from 'class-validator';
 import {
   Populations,
@@ -18,6 +20,10 @@ export class CreateJobDto {
   @MinLength(5)
   @MaxLength(20)
   job_name: string;
+
+  @IsEmail()
+  @IsOptional()
+  email: string;
 
   @IsNumberString()
   marker_name: string;

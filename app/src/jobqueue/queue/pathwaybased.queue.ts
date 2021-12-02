@@ -8,6 +8,7 @@ export interface WorkerJob {
   jobUID: string;
   username: string;
   email: string;
+  noAuth: boolean;
 }
 
 @Injectable()

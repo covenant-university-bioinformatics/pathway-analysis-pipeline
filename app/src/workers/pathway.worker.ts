@@ -88,12 +88,23 @@ export default async (job: SandboxedJob) => {
   const error_msg = jobSpawn?.stderr?.toString();
   console.log(error_msg);
 
-  const scores_filename = `${parameters.filename_prefix}.${parameters.gene_scoring}.genescores.chr${parameters.chr}_filtered.txt`;
+  const scores_filename =
+    parameters.chr === 'all'
+      ? `${parameters.filename_prefix}.${parameters.gene_scoring}.genescores_filtered.txt`
+      : `${parameters.filename_prefix}.${parameters.gene_scoring}.genescores.chr${parameters.chr}_filtered.txt`;
+
   const pathway_filename =
     parameters.run_pathway === RunPathwayOptions.ON
-      ? `${parameters.filename_prefix}.PathwaySet--${parameters.gene_set_file}--${parameters.gene_scoring}.chr${parameters.chr}_filtered.txt`
+      ? parameters.chr === 'all'
+        ? `${parameters.filename_prefix}.PathwaySet--${parameters.gene_set_file}--${parameters.gene_scoring}_filtered.txt`
+        : `${parameters.filename_prefix}.PathwaySet--${parameters.gene_set_file}--${parameters.gene_scoring}.chr${parameters.chr}_filtered.txt`
       : '';
-  const fusion_filename = `${parameters.filename_prefix}.${parameters.gene_scoring}.fusion.genescores.chr${parameters.chr}_filtered.txt`;
+  const fusion_filename =
+    parameters.run_pathway === RunPathwayOptions.ON
+      ? parameters.chr === 'all'
+        ? `${parameters.filename_prefix}.${parameters.gene_scoring}.fusion.genescores_filtered.txt`
+        : `${parameters.filename_prefix}.${parameters.gene_scoring}.fusion.genescores.chr${parameters.chr}_filtered.txt`
+      : '';
 
   const genes_scores = await fileOrPathExists(
     `${pathToOutputDir}/${scores_filename}`,
@@ -112,11 +123,13 @@ export default async (job: SandboxedJob) => {
   }
   console.log(genes_scores, fusion_file, pathways);
 
-  if (genes_scores && fusion_file && pathways) {
+  if (genes_scores && pathways) {
     console.log(`${job?.data?.jobName} spawn done!`);
     return true;
   } else {
-    throw new Error('Job failed to successfully complete');
+    throw new Error(
+      'Job failed to successfully complete, please check your input parameters and try again',
+    );
     // throw new Error('Job failed to successfully complete');
   }
 

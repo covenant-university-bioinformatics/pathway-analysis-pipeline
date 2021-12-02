@@ -1,5 +1,5 @@
 import { Inject, Module, OnModuleInit } from '@nestjs/common';
-import { createWorkers } from '../workers/annot.main';
+import { createWorkers } from '../workers/pathway.main';
 import { PathwayBasedJobQueue } from './queue/pathwaybased.queue';
 import { NatsModule } from '../nats/nats.module';
 import { JobCompletedPublisher } from '../nats/publishers/job-completed-publisher';
