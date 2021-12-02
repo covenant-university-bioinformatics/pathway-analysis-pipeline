@@ -160,7 +160,6 @@ spec:
             {{- range $arg := $cont.init.args }}
             - {{ $arg | quote }}
             {{- end }}
-{{/*          {{- if hasKey $cont.init "volumeMount"  }}*/}}
           volumeMounts:
             {{- if $.Values.fileConfigMap }}
             {{- range $.Values.fileConfigMap }}
@@ -168,7 +167,6 @@ spec:
               name: {{ .volumeName }}-volume
           {{- end }}
           {{- end }}
-{{/*          {{- end }}*/}}
         {{- if $.Values.initContainers.createdb }}
         - name: {{ $cont.createdb.name }}
           image: {{ $cont.createdb.image }}
@@ -203,7 +201,6 @@ spec:
             {{- range $arg := $cont.createdb.args }}
             - {{ $arg | quote }}
               {{- end }}
-{{/*          {{- if hasKey $cont.createdb "volumeMount"  }}*/}}
           volumeMounts:
             {{- if $.Values.fileConfigMap }}
             {{- range $.Values.fileConfigMap }}
@@ -211,7 +208,6 @@ spec:
               name: {{ .volumeName }}-volume
             {{- end }}
         {{- end }}
-{{/*        {{- end }}*/}}
       {{- end }}
       {{- end }}
       {{- end }}

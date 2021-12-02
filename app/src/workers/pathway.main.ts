@@ -22,7 +22,7 @@ const createScheduler = () => {
   });
 };
 
-const processorFile = path.join(__dirname, 'annot.worker.js');
+const processorFile = path.join(__dirname, 'pathway.worker.js');
 
 export const createWorkers = async (
   jobCompletedPublisher: JobCompletedPublisher,
