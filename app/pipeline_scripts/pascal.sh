@@ -35,10 +35,10 @@
 #set -x	## To debug
 
 #for production
-#bin_dir=/local/datasets/PASCAL;
+bin_dir=/local/datasets/PASCAL;
 
 #for development
-bin_dir=/local/datasets/pathwaybased;
+#bin_dir=/local/datasets/pathwaybased;
 
 
 gwas_summary=$1;
