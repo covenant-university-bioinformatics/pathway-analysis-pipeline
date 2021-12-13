@@ -7,6 +7,7 @@ import {
   IsNotEmpty,
   IsEmail,
   IsOptional,
+  IsBooleanString,
 } from 'class-validator';
 import {
   Populations,
@@ -24,6 +25,9 @@ export class CreateJobDto {
   @IsEmail()
   @IsOptional()
   email: string;
+
+  @IsBooleanString()
+  useTest: string;
 
   @IsNumberString()
   marker_name: string;
