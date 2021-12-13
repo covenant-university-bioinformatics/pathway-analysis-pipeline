@@ -11,13 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: cd app && docker build -t cubrenig/pgwaspathway_based:latest -t cubrenig/pgwaspathway_based:$GITHUB_SHA .
+      - run: cd app && docker build -t cubrenig/pgwas_pbased:latest -t cubrenig/pgwas_pbased:$GITHUB_SHA .
       - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      - run: docker push cubrenig/pgwaspathway_based
-      - run: docker push cubrenig/pgwaspathway_based:$GITHUB_SHA
+      - run: docker push cubrenig/pgwas_pbased:latest
+      - run: docker push cubrenig/pgwas_pbased:$GITHUB_SHA
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
         with:
@@ -30,12 +30,15 @@ jobs:
         run: rsync -avz ${{ github.workspace }}/ ${{ secrets.USERNAME }}@${{ secrets.SSH_HOST }}:${{ secrets.HOME_DIR }}/files/dist/pathway_based/
       - name: run script commands via ssh
         uses: appleboy/ssh-action@master
+        env:
+          SHA: ${{ github.sha }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
+          envs: SHA
           script: |
-            helm upgrade pathwaybased ${{ secrets.HOME_DIR }}/files/dist/pathway_based/infra/helm/ --install --wait --set image=cubrenig/pgwaspathway_based:$GITHUB_SHA --values=${{ secrets.HOME_DIR }}/files/dist/pathway_based/infra/helm/micro-values.yaml
+            helm upgrade pathwaybased ${{ secrets.HOME_DIR }}/files/dist/pathway_based/infra/helm/ --install --wait --set image=cubrenig/pgwas_pbased:$SHA --values=${{ secrets.HOME_DIR }}/files/dist/pathway_based/infra/helm/micro-values.yaml
 #      - uses: digitalocean/action-doctl@v2
 #        with:
 #          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}

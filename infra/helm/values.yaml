@@ -113,7 +113,9 @@ volumes:
       - name: humandb
         path: /run/desktop/mnt/host/d/PASCAL
         mountPath: /local/datasets/pathwaybased
-
+      - name: testfiles
+        path: /run/desktop/mnt/host/c/Users/daref/Documents/NodeBackend/pgwas_test_files
+        mountPath: /local/datasets/data
   network:
     enabled: false
     nfs:
