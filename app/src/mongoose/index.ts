@@ -19,4 +19,8 @@ const connectDB = async () => {
   }
 };
 
+export const closeDB = () => {
+  mongoose.connection.close();
+};
+
 export default connectDB;

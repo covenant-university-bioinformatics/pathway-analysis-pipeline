@@ -26,12 +26,13 @@ import {
   removeUserJob,
   removeManyUserJobs,
   fileOrPathExists,
+  fileSizeMb,
 } from '@cubrepgwas/pgwascommon';
 
 //production
-const testPath = '/local/datasets/pgwas_test_files/pascal/uk_split.txt';
+const testPath = '/local/datasets/pgwas_test_files/pascal/UK_pval_0.05.txt';
 //development
-// const testPath = '/local/datasets/data/pascal/uk_split.txt';
+// const testPath = '/local/datasets/data/pascal/UK_pval_0.05.txt';
 
 @Injectable()
 export class JobsPathwaybasedService {
@@ -97,14 +98,6 @@ export class JobsPathwaybasedService {
       throw new InternalServerErrorException();
     }
 
-    let filename;
-
-    if (createJobDto.useTest === 'false') {
-      filename = `/pv/analysis/${jobUID}/input/${file.filename}`;
-    } else {
-      filename = `/pv/analysis/${jobUID}/input/test.txt`;
-    }
-
     // console.log(createJobDto);
     console.log(jobUID);
 
@@ -114,25 +107,13 @@ export class JobsPathwaybasedService {
     sessionTest.startTransaction();
 
     try {
-      // console.log('DTO: ', createJobDto);
       const opts = { session };
       const optsTest = { session: sessionTest };
 
       const filepath = createJobDto.useTest === 'true' ? testPath : file.path;
 
-      //write the exact columns needed by the analysis
-      const totalLines = writePathwayBasedFile(filepath, filename, {
-        marker_name: parseInt(createJobDto.marker_name, 10) - 1,
-        p: parseInt(createJobDto.p_value, 10) - 1,
-      });
-
-      if (createJobDto.useTest === 'false') {
-        deleteFileorFolder(file.path).then(() => {
-          console.log('deleted');
-        });
-      }
-
-      const longJob = totalLines > 100000;
+      const fileSize = await fileSizeMb(filepath);
+      const longJob = fileSize > 0.5;
 
       //save job parameters, folder path, filename in database
       let newJob;
@@ -141,7 +122,7 @@ export class JobsPathwaybasedService {
         newJob = await PathwaybasedJobsModel.build({
           job_name: createJobDto.job_name,
           jobUID,
-          inputFile: filename,
+          inputFile: filepath,
           status: JobStatus.QUEUED,
           user: user.id,
           longJob,
@@ -152,7 +133,7 @@ export class JobsPathwaybasedService {
         newJob = await PathwaybasedJobsModel.build({
           job_name: createJobDto.job_name,
           jobUID,
-          inputFile: filename,
+          inputFile: filepath,
           status: JobStatus.QUEUED,
           email: createJobDto.email,
           longJob,
@@ -165,10 +146,12 @@ export class JobsPathwaybasedService {
         );
       }
 
+      let filename = filepath.replace(/^.*[\\\/]/, '');
+      const prefix = filename.replace(/\.[^/.]+$/, '');
       //let the models be created per specific analysis
       const genebased = await PathwayBasedModel.build({
         ...createJobDto,
-        filename_prefix: filename.split('/')[5].replace(/\.[^/.]+$/, ''),
+        filename_prefix: prefix,
         job: newJob.id,
       });
 
