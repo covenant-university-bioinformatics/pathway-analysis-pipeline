@@ -10,9 +10,13 @@ import {
   RunPathwayOptions,
 } from '../jobs/models/pathwaybased.model';
 import { spawnSync } from 'child_process';
-import connectDB from '../mongoose';
+import connectDB, { closeDB } from '../mongoose';
 
-import { fileOrPathExists } from '@cubrepgwas/pgwascommon';
+import {
+  fileOrPathExists,
+  writePathwayBasedFile,
+} from '@cubrepgwas/pgwascommon';
+import { deleteFileorFolder } from '../utils/utilityfunctions';
 
 function sleep(ms) {
   console.log('sleeping');
@@ -54,8 +58,32 @@ export default async (job: SandboxedJob) => {
   }).exec();
   const jobParams = await PathwaybasedJobsModel.findById(job.data.jobId).exec();
 
+  //create input file and folder
+  let filename;
+
+  //extract file name
+  const name = jobParams.inputFile.split(/(\\|\/)/g).pop();
+
+  if (parameters.useTest === false) {
+    filename = `/pv/analysis/${jobParams.jobUID}/input/${name}`;
+  } else {
+    filename = `/pv/analysis/${jobParams.jobUID}/input/test.txt`;
+  }
+
+  //write the exact columns needed by the analysis
+  writePathwayBasedFile(jobParams.inputFile, filename, {
+    marker_name: parameters.marker_name - 1,
+    p: parameters.p_value - 1,
+  });
+
+  if (parameters.useTest === false) {
+    deleteFileorFolder(jobParams.inputFile).then(() => {
+      console.log('deleted');
+    });
+  }
+
   //assemble job parameters
-  const pathToInputFile = `${jobParams.inputFile}`;
+  const pathToInputFile = filename;
   const pathToOutputDir = `/pv/analysis/${job.data.jobUID}/pathwaybased/output`;
   const jobParameters = getJobParameters(parameters);
   jobParameters.unshift(pathToInputFile, pathToOutputDir);
@@ -69,10 +97,11 @@ export default async (job: SandboxedJob) => {
     job.data.jobId,
     {
       status: JobStatus.RUNNING,
+      inputFile: filename,
     },
     { new: true },
   );
-
+  await sleep(3000);
   //spawn process
   const jobSpawn = spawnSync(
     // './pipeline_scripts/pascal.sh &>/dev/null',
@@ -122,6 +151,8 @@ export default async (job: SandboxedJob) => {
     );
   }
   console.log(genes_scores, fusion_file, pathways);
+
+  closeDB();
 
   if (genes_scores && pathways) {
     console.log(`${job?.data?.jobName} spawn done!`);

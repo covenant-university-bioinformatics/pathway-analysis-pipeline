@@ -1,16 +1,11 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
-  InternalServerErrorException,
-  NotFoundException,
   Param,
   Post,
   Query,
-  StreamableFile,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -18,29 +13,20 @@ import {
 } from '@nestjs/common';
 import * as multer from 'multer';
 import * as fs from 'fs';
-import { v4 as uuidv4 } from 'uuid';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JobsPathwaybasedService } from '../services/jobs.pathwaybased.service';
 import { CreateJobDto } from '../dto/create-job.dto';
-import {
-  deleteFileorFolder,
-  fileOrPathExists,
-  fileSizeMb,
-  getFileOutput,
-} from '@cubrepgwas/pgwascommon';
-import { fetchLines, writePathwayBasedFile } from '@cubrepgwas/pgwascommon';
-import { JobStatus } from '../models/pathwaybased.jobs.model';
+import { getFileOutput } from '@cubrepgwas/pgwascommon';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from '../../decorators/get-user.decorator';
-import { UserDoc } from '../../auth/models/user.model';
 import { GetJobsDto } from '../dto/getjobs.dto';
 
 const storageOpts = multer.diskStorage({
   destination: function (req, file, cb) {
-    if (!fs.existsSync('/tmp/summaryStats')) {
-      fs.mkdirSync('/tmp/summaryStats', { recursive: true });
+    if (!fs.existsSync('/local/datasets/temporary')) {
+      fs.mkdirSync('/local/datasets/temporary', { recursive: true });
     }
-    cb(null, '/tmp/summaryStats'); //destination
+    cb(null, '/local/datasets/temporary'); //destination
   },
   filename: function (req, file, cb) {
     cb(null, file.fieldname + '__' + file.originalname);

@@ -28,6 +28,9 @@ export enum GeneSetFileOptions {
 interface PathwayBasedAttrs {
   job: string;
   filename_prefix: string;
+  useTest: string;
+  marker_name: string;
+  p_value: string;
   population: Populations;
   run_pathway: RunPathwayOptions;
   chr: string;
@@ -51,6 +54,9 @@ interface PathwayBasedModel extends mongoose.Model<PathwayBasedDoc> {
 export interface PathwayBasedDoc extends mongoose.Document {
   id: string;
   version: number;
+  useTest: boolean;
+  marker_name: number;
+  p_value: number;
   filename_prefix: string;
   population: Populations;
   run_pathway: RunPathwayOptions;
@@ -70,6 +76,18 @@ const PathwayBasedSchema = new mongoose.Schema<
   PathwayBasedModel
 >(
   {
+    useTest: {
+      type: Boolean,
+      trim: true,
+    },
+    marker_name: {
+      type: Number,
+      trim: true,
+    },
+    p_value: {
+      type: Number,
+      trim: true,
+    },
     population: {
       type: String,
       enum: [
