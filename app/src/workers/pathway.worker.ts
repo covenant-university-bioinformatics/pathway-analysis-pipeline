@@ -53,7 +53,7 @@ export default async (job: SandboxedJob) => {
   await sleep(2000);
 
   //fetch job parameters from database
-  const parameters = await PathwayBasedModel.findOne({
+  let parameters = await PathwayBasedModel.findOne({
     job: job.data.jobId,
   }).exec();
   const jobParams = await PathwaybasedJobsModel.findById(job.data.jobId).exec();
@@ -81,6 +81,16 @@ export default async (job: SandboxedJob) => {
       console.log('deleted');
     });
   }
+
+  //update new file prefix
+  let fname = filename.replace(/^.*[\\\/]/, '');
+  const prefix = fname.replace(/\.[^/.]+$/, '');
+
+  parameters = await PathwayBasedModel.findOneAndUpdate(
+    { job: job.data.jobId },
+    { filename_prefix: prefix },
+    { new: true },
+  ).exec();
 
   //assemble job parameters
   const pathToInputFile = filename;
