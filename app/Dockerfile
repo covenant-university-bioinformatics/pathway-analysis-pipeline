@@ -18,6 +18,7 @@ COPY ./ ./
 #add bash
 RUN apk add --no-cache bash
 
+#RUN apk --no-cache add R
 
 #install Java and packages
 RUN apk --no-cache add openjdk11
