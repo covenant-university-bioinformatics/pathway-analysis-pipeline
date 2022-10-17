@@ -67,7 +67,6 @@ const PathwayBasedJobSchema = new mongoose.Schema<
     inputFile: {
       type: String,
       required: [true, 'Please add a input filename'],
-      unique: true,
       trim: true,
     },
 
