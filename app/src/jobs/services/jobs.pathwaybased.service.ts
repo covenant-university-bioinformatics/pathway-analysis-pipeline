@@ -51,9 +51,9 @@ export class JobsPathwaybasedService {
         throw new BadRequestException('Please upload a file');
       }
 
-      if (file.mimetype !== 'text/plain') {
-        throw new BadRequestException('Please upload a text file');
-      }
+      // if (file.mimetype !== 'text/plain') {
+      //   throw new BadRequestException('Please upload a text file');
+      // }
     }
 
     if (!user && !createJobDto.email) {
